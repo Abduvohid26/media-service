@@ -1,0 +1,19 @@
+services:
+  media-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    platform: linux/amd64
+    volumes:
+      - ./.media-service-files:/media-service-files
+      - ./proxylist.json:/proxylist.json
+    network_mode: "host"
+    environment:
+      - MEDIA_SERVICE_DEFAULT_TELEGRAM_BOT_SERVER=https://api.telegram.org/bot{token}
+  redis:
+    image: redis:latest
+    restart: always
+    volumes:
+      - ./.media-service:/data
+    logging:
+      driver: none
