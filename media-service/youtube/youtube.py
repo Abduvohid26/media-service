@@ -13,49 +13,128 @@ MEDIA_SERVICE_DEFAULT_TELEGRAM_BOT_SERVER = os.environ.get("MEDIA_SERVICE_DEFAUL
 YOUTUBE_DOWNLOAD_MAX_ATTEMPTS = 3
 
 # downloads the track and uploads the file to telegram so the bot can send the downloaded file by file id
+# async def youtube_download_telegram(
+#   id: str,
+#   telegram_bot_token: str,
+#   telegram_bot_server: typing.Union[str, None] = None,
+#   # chat_id: typing.List[int] = [7248129579, 7452580556, 6315794948, 7303643228, 7231662235, 6999114299, 7526375141, 343103355, 1757611067],
+#   chat_id: typing.List[int] = [5700964012,],
+#   source_address: typing.Union[str, None] = None,
+#   proxy: typing.Union[str, None] = None,
+#   recognize: bool = False
+# ) -> str:
+
+#   download_attempts = 0
+#   downloaded_file_path = ""
+
+#   while download_attempts < YOUTUBE_DOWNLOAD_MAX_ATTEMPTS:
+#     try:
+#       target_proxy = await proxylist_get_unblocked()
+#       downloaded_file_path = await youtube_backend_yt_dlp_download(id, source_address=source_address, proxy=target_proxy)
+#       print(downloaded_file_path, "path")
+#       break
+#     except Exception as ex:
+#       if "Forbidden" in str(ex):
+#         await proxylist_blocked_add(target_proxy)
+#     finally:
+#       download_attempts += 1
+
+#   if not downloaded_file_path:
+#     return None
+
+#   recognize_result = None
+
+#   if recognize:
+#     try:
+#       recognize_result = await track_backend_songrec_recognize(downloaded_file_path)
+#     except:
+#       pass
+
+#   telegram_bot = Bot(token=telegram_bot_token, base_url=telegram_bot_server or MEDIA_SERVICE_DEFAULT_TELEGRAM_BOT_SERVER)
+
+#   chat_id_to_send_to = random.choice(chat_id)
+#   thumbnail = await download_file_in_memory(f"https://i.ytimg.com/vi/{id}/mqdefault.jpg")
+#   with open(downloaded_file_path, "rb") as video_fd:
+#     sent_video = await telegram_bot.send_video(chat_id_to_send_to, video=video_fd, thumbnail=thumbnail, supports_streaming=True)
+
+#   pathlib.Path(downloaded_file_path).unlink(missing_ok=True)
+#   return sent_video.video.file_id, recognize_result
+
+
+
 async def youtube_download_telegram(
-  id: str,
-  telegram_bot_token: str,
-  telegram_bot_server: typing.Union[str, None] = None,
-  # chat_id: typing.List[int] = [7248129579, 7452580556, 6315794948, 7303643228, 7231662235, 6999114299, 7526375141, 343103355, 1757611067],
-  chat_id: typing.List[int] = [5700964012,],
-  source_address: typing.Union[str, None] = None,
-  proxy: typing.Union[str, None] = None,
-  recognize: bool = False
-) -> str:
+    id: str,
+    telegram_bot_token: str,
+    telegram_bot_server: typing.Union[str, None] = None,
+    chat_id: typing.List[int] = [5700964012,],
+    source_address: typing.Union[str, None] = None,
+    proxy: typing.Union[str, None] = None,
+    recognize: bool = False
+) -> typing.Tuple[typing.Union[str, None], typing.Union[str, None]]:
 
-  download_attempts = 0
-  downloaded_file_path = ""
+    download_attempts = 0
+    downloaded_file_path = ""
 
-  while download_attempts < YOUTUBE_DOWNLOAD_MAX_ATTEMPTS:
+    while download_attempts < YOUTUBE_DOWNLOAD_MAX_ATTEMPTS:
+        try:
+            print(f"[Attempt {download_attempts+1}] Getting proxy...")
+            target_proxy = await proxylist_get_unblocked()
+            print(f"Using proxy: {target_proxy}")
+            
+            downloaded_file_path = await youtube_backend_yt_dlp_download(
+                id,
+                source_address=source_address,
+                proxy=target_proxy
+            )
+            print(f"✅ Download successful. File path: {downloaded_file_path}")
+            break
+
+        except Exception as ex:
+            print(f"❌ Download attempt failed: {str(ex)}")
+            if "Forbidden" in str(ex):
+                print(f"⚠️ Proxy marked as blocked: {target_proxy}")
+                await proxylist_blocked_add(target_proxy)
+        finally:
+            download_attempts += 1
+
+    if not downloaded_file_path:
+        print("❗ Download failed after all attempts.")
+        return None, None
+
+    recognize_result = None
+
+    if recognize:
+        try:
+            print("🔍 Recognizing audio...")
+            recognize_result = await track_backend_songrec_recognize(downloaded_file_path)
+            print("🎵 Recognize result:", recognize_result)
+        except Exception as ex:
+            print("⚠️ Audio recognition failed:", str(ex))
+
+    telegram_bot = Bot(
+        token=telegram_bot_token,
+        base_url=telegram_bot_server or MEDIA_SERVICE_DEFAULT_TELEGRAM_BOT_SERVER
+    )
+
+    chat_id_to_send_to = random.choice(chat_id)
+    print(f"📤 Sending video to chat: {chat_id_to_send_to}")
+
     try:
-      target_proxy = await proxylist_get_unblocked()
-      downloaded_file_path = await youtube_backend_yt_dlp_download(id, source_address=source_address, proxy=target_proxy)
-      print(downloaded_file_path, "path")
-      break
+        thumbnail = await download_file_in_memory(f"https://i.ytimg.com/vi/{id}/mqdefault.jpg")
+        with open(downloaded_file_path, "rb") as video_fd:
+            sent_video = await telegram_bot.send_video(
+                chat_id_to_send_to,
+                video=video_fd,
+                thumbnail=thumbnail,
+                supports_streaming=True
+            )
+        print("✅ Video sent successfully. File ID:", sent_video.video.file_id)
     except Exception as ex:
-      if "Forbidden" in str(ex):
-        await proxylist_blocked_add(target_proxy)
-    finally:
-      download_attempts += 1
+        print("❌ Failed to send video:", str(ex))
+        return None, recognize_result
 
-  if not downloaded_file_path:
-    return None
+    # Remove downloaded file
+    pathlib.Path(downloaded_file_path).unlink(missing_ok=True)
+    print("🧹 Temporary file deleted:", downloaded_file_path)
 
-  recognize_result = None
-
-  if recognize:
-    try:
-      recognize_result = await track_backend_songrec_recognize(downloaded_file_path)
-    except:
-      pass
-
-  telegram_bot = Bot(token=telegram_bot_token, base_url=telegram_bot_server or MEDIA_SERVICE_DEFAULT_TELEGRAM_BOT_SERVER)
-
-  chat_id_to_send_to = random.choice(chat_id)
-  thumbnail = await download_file_in_memory(f"https://i.ytimg.com/vi/{id}/mqdefault.jpg")
-  with open(downloaded_file_path, "rb") as video_fd:
-    sent_video = await telegram_bot.send_video(chat_id_to_send_to, video=video_fd, thumbnail=thumbnail, supports_streaming=True)
-
-  pathlib.Path(downloaded_file_path).unlink(missing_ok=True)
-  return sent_video.video.file_id, recognize_result
+    return sent_video.video.file_id, recognize_result
