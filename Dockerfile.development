@@ -2,13 +2,19 @@ FROM python:3.12.4
 
 WORKDIR /home
 
-COPY . .
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
+
 
 RUN apt update
-RUN pip install -r requirements.txt
 RUN apt install -y ffmpeg proxychains4 libpulse-dev libasound2
 
+COPY . .
+
 COPY bin/songrec /usr/bin
-RUN ["chmod", "+x", "/usr/bin/songrec"]
+RUN chmod +x /usr/bin/songrec
+
+
 
 CMD ["gunicorn", "media-service.main:main", "--bind", "0.0.0.0:8050", "--worker-class", "aiohttp.GunicornWebWorker", "--reload"]

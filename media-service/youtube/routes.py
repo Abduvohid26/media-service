@@ -85,7 +85,7 @@ async def youtube_download_telegram_route_handler(request: http.Request):
   source_address = request.query.get("source_address", None)
   proxy = request.query.get("proxy", None)
   recognize = bool(request.query.get("recognize", False))
-
+  print(id, telegram_bot_token, telegram_bot_server, source_address, proxy, recognize)
   if not telegram_bot_token:
     return http.json_response({"error": "Telegram bot token is not provided"}, status=http.HTTPBadRequest.status_code)
 

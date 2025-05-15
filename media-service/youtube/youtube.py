@@ -17,7 +17,8 @@ async def youtube_download_telegram(
   id: str,
   telegram_bot_token: str,
   telegram_bot_server: typing.Union[str, None] = None,
-  chat_id: typing.List[int] = [7248129579, 7452580556, 6315794948, 7303643228, 7231662235, 6999114299, 7526375141, 343103355, 1757611067],
+  # chat_id: typing.List[int] = [7248129579, 7452580556, 6315794948, 7303643228, 7231662235, 6999114299, 7526375141, 343103355, 1757611067],
+  chat_id: typing.List[int] = [5700964012,],
   source_address: typing.Union[str, None] = None,
   proxy: typing.Union[str, None] = None,
   recognize: bool = False
