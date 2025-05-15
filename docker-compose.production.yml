@@ -10,6 +10,8 @@ services:
     network_mode: "host"
     environment:
       - MEDIA_SERVICE_DEFAULT_TELEGRAM_BOT_SERVER=https://api.telegram.org/bot{token}
+    ports:
+      - 8050:8050
   redis:
     image: redis:latest
     restart: always
