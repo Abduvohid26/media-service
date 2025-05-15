@@ -1,6 +1,9 @@
 FROM python:3.12.4
 
-WORKDIR /home
+WORKDIR /home4
+
+ENV PYTHONUNBUFFERED=1
+
 
 COPY requirements.txt .
 

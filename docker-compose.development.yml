@@ -18,5 +18,5 @@ services:
     restart: always
     volumes:
       - ./.media-service:/data
-    logging:
-      driver: none
+    # logging:
+    #   driver: none

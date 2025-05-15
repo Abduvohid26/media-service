@@ -31,6 +31,7 @@ async def youtube_download_telegram(
     try:
       target_proxy = await proxylist_get_unblocked()
       downloaded_file_path = await youtube_backend_yt_dlp_download(id, source_address=source_address, proxy=target_proxy)
+      print(downloaded_file_path, "path")
       break
     except Exception as ex:
       if "Forbidden" in str(ex):
