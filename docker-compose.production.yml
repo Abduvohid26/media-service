@@ -1,17 +1,29 @@
+# services:
+#   media-service:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.production
+#     platform: linux/amd64
+#     volumes:
+#       - ./.media-service-files:/media-service-files
+#       - ./proxylist.json:/proxylist.json
+#     network_mode: "host"
+#     environment:
+#       - MEDIA_SERVICE_DEFAULT_TELEGRAM_BOT_SERVER=https://api.telegram.org/bot{token}
+#     ports:
+#       - 8050:8050
+#   redis:
+#     image: redis:latest
+#     restart: always
+#     volumes:
+#       - ./.media-service:/data
+#     ports:
+#       - "6379:6379"
+#     logging:
+#       driver: none
+
+
 services:
-  media-service:
-    build:
-      context: .
-      dockerfile: Dockerfile.production
-    platform: linux/amd64
-    volumes:
-      - ./.media-service-files:/media-service-files
-      - ./proxylist.json:/proxylist.json
-    network_mode: "host"
-    environment:
-      - MEDIA_SERVICE_DEFAULT_TELEGRAM_BOT_SERVER=https://api.telegram.org/bot{token}
-    ports:
-      - 8050:8050
   redis:
     image: redis:latest
     restart: always
@@ -21,3 +33,18 @@ services:
       - "6379:6379"
     logging:
       driver: none
+
+  media-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    platform: linux/amd64
+    volumes:
+      - ./.media-service-files:/media-service-files
+      - ./proxylist.json:/proxylist.json
+    environment:
+      - MEDIA_SERVICE_DEFAULT_TELEGRAM_BOT_SERVER=https://api.telegram.org/bot{token}
+    ports:
+      - 8050:8050
+    depends_on:
+      - redis
