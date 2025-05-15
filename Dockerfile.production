@@ -2,7 +2,7 @@ FROM python:3.12.4
 
 WORKDIR /home
 
-COPY . .
+COPY requirements.txt .
 
 RUN apt update
 RUN pip install -r requirements.txt
@@ -10,6 +10,10 @@ RUN apt install -y ffmpeg
 RUN apt install -y proxychains4
 RUN apt install -y libpulse-dev
 RUN apt install -y libasound2
+
+
+COPY . .
+
 
 COPY bin/songrec /usr/bin
 RUN ["chmod", "+x", "/usr/bin/songrec"]
