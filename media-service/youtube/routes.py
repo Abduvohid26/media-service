@@ -93,7 +93,8 @@ async def youtube_download_telegram_route_handler(request: http.Request):
 
   try:
     (file_id, recognize_result,) = await youtube_download_telegram(id, telegram_bot_token, telegram_bot_server, source_address=source_address, proxy=proxy, recognize=recognize)
-    logger.info(f"Downloaded {recognize_result} to {file_id}")
+    # logger.info(f"Downloaded {recognize_result} to {file_id}")
+    print(file_id, recognize_result)
     if file_id is None:
       print({"error": "Unable to download video", "e": file_id, "recognize_result": recognize_result})
       return http.json_response({"error": "Unable to download video", "e": file_id, "recognize_result": recognize_result}, status=http.HTTPInternalServerError.status_code)
