@@ -44,16 +44,16 @@ def _instagram_deserialize2(data):
     "thumbnail_url": data["medias"][0]["thumb"],
   }
 
-async def instagram_backend_apishop_link_get(link: str):
-  params = {"url": link}
-  async with aiohttp.ClientSession("https://full.apishop.uz") as http_session:
-    async with http_session.get("/get-media-info", params=params) as http_response:
-      json_response = await http_response.json()
-      return _instagram_deserialize(json_response)
-
 # async def instagram_backend_apishop_link_get(link: str):
-#   params = {"in_url": link}
-#   async with aiohttp.ClientSession("https://fast.videoyukla.uz") as http_session:
-#     async with http_session.get("/instagram/media", params=params) as http_response:
+#   params = {"url": link}
+#   async with aiohttp.ClientSession("https://full.apishop.uz") as http_session:
+#     async with http_session.get("/get-media-info", params=params) as http_response:
 #       json_response = await http_response.json()
-#       return _instagram_deserialize2(json_response)
+#       return _instagram_deserialize(json_response)
+
+async def instagram_backend_apishop_link_get(link: str):
+  params = {"in_url": link}
+  async with aiohttp.ClientSession("https://fast.videoyukla.uz") as http_session:
+    async with http_session.get("/instagram/media", params=params) as http_response:
+      json_response = await http_response.json()
+      return _instagram_deserialize2(json_response)
