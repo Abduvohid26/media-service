@@ -1,5 +1,6 @@
 import aiohttp
 import re
+import requests
 # def _tiktok_deserialize(data):
 #   non_watermark_formats = filter(lambda format:  format["quality"], data["medias"])
 
@@ -19,6 +20,23 @@ import re
 #       return _tiktok_deserialize(json_response) 
 
 
+def get_video_id_from_short_url(short_url: str) -> str | None:
+    try:
+        # Redirect qilib to‘liq URLni olish
+        response = requests.head(short_url, allow_redirects=True)
+        final_url = response.url
+
+        # URL ichidan ID ni olish
+        match = re.search(r'/video/(\d+)', final_url) or re.search(r'/v/(\d+)\.html', final_url)
+        if match:
+            return match.group(1)
+        else:
+            print("Video ID topilmadi.")
+            return None
+    except Exception as e:
+        print(f"Xatolik yuz berdi: {e}")
+        return None
+
 
 def get_tiktok_id(url: str) -> str | None:
     pattern = r'/v/(\d+)\.html'
@@ -35,9 +53,9 @@ def _tiktok_deserialize(data, link):
 
     first_media = medias[0]
     media_type = first_media.get("type", "video")
-
+    id = get_tiktok_id(link)
     result = {
-        "id": get_tiktok_id(link),
+        "id": id,
         "type": media_type,
     }
 
@@ -64,6 +82,3 @@ async def tiktok_backend_apishop_link_get(link: str):
     async with http_session.get("/tiktok/media/", params=params) as http_response:
       json_response = await http_response.json()
       return _tiktok_deserialize(json_response, link)
-    
-
-
